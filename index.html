@@ -57,6 +57,34 @@
 	<!-- V3 Script -->
     <!-- <script id="usercentrics-cmp" src="https://web.cmp.usercentrics.eu/ui/loader.js" data-settings-id="H52CyEJF25xP2U" async></script>-->
 
+	<script>
+    (function () {
+    function unblockUcElements() {
+    if (!window.UC_UI || typeof UC_UI.getServicesBaseInfo !== 'function') return;
+
+    UC_UI.getServicesBaseInfo().then(function (services) {
+      document.querySelectorAll('[data-usercentrics][data-src]').forEach(function (el) {
+        if (el.getAttribute('src')) return; // already unblocked
+
+        var serviceName = el.getAttribute('data-usercentrics');
+        var service = services.filter(function (s) { return s.name === serviceName; })[0];
+
+        if (service && service.consent && service.consent.status) {
+          el.setAttribute('src', el.getAttribute('data-src'));
+        }
+      });
+    });
+   }
+
+  // Handles the case where the CMP is already initialized by the time this script runs
+  if (window.UC_UI && typeof UC_UI.isInitialized === 'function' && UC_UI.isInitialized()) {
+    unblockUcElements();
+  }
+
+  window.addEventListener('UC_UI_INITIALIZED', unblockUcElements);
+  window.addEventListener('UC_UI_VIEW_CHANGED', unblockUcElements); // fires after accept/deny/save
+})();
+</script>
 	<!-- Google Tag Manager -->
 	<script type="text/javascript" data-uc-allowed="true">
 		(function(w, d, s, l, i) {
